@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Salary Management</string>
+    <string name="salary">Salary</string>
+    <string name="calculate">Calculate</string>
+    <string name="savings">Savings</string>
+    <string name="wants">Wants</string>
+    <string name="fixed_needs">Fixed Needs</string>
 </resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gestione Stipendio</string>
+    <string name="salary">Salario</string>
+    <string name="calculate">Calcola</string>
+    <string name="savings">Risparmi</string>
+    <string name="wants">Desideri</string>
+    <string name="fixed_needs">Bisogni</string>
+</resources>
