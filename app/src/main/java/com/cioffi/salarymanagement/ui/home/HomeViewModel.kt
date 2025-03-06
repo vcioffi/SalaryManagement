@@ -12,9 +12,12 @@ import kotlinx.coroutines.flow.update
 import java.text.NumberFormat
 
 data class homeUiState(
-    val fixedNeeds: Double = 0.0,  //50%
-    val wants: Double = 0.0,       //30%
-    val savings: Double = 0.0      //20%
+    val fixedNeeds: Double = 0.0,
+    val wants: Double = 0.0,
+    val savings: Double = 0.0,
+    val fixedNeedsPercentage: Float = 50f,  //50%
+    val wantsPercentage: Float = 30f,       //30%
+    val savingsPercentage: Float = 20f      //20%
 )
 
 class HomeViewModel :ViewModel() {
@@ -35,12 +38,28 @@ class HomeViewModel :ViewModel() {
             val sal = salary.toDouble()
             _uiState.update { it ->
                 it.copy(
-                    fixedNeeds = sal * 50 / 100,
-                    wants = sal * 30 / 100,
-                    savings = sal * 20 / 100
+                    fixedNeeds = sal * uiState.value.fixedNeedsPercentage / 100,
+                    wants = sal * uiState.value.wantsPercentage / 100,
+                    savings = sal * uiState.value.savingsPercentage / 100
                 )
             }
         }
+    }
+
+    fun onNeedsPercChange(perc :Float){
+        _uiState.update {it.copy( fixedNeedsPercentage = perc )}
+    }
+
+    fun onWantsPercChange(perc :Float){
+        _uiState.update {it.copy( wantsPercentage = perc )}
+    }
+
+    fun onSavingPercChange(perc :Float){
+        _uiState.update {it.copy( savingsPercentage = perc )}
+    }
+
+    fun balancePercentage(){
+
     }
 
     fun onClear() {
@@ -49,7 +68,10 @@ class HomeViewModel :ViewModel() {
                 it.copy(
                     fixedNeeds = 0.0,
                     wants = 0.0,
-                    savings = 0.0
+                    savings = 0.0,
+                    fixedNeedsPercentage = 50f,
+                    wantsPercentage = 30f,
+                    savingsPercentage = 20f
                 )
             }
     }
