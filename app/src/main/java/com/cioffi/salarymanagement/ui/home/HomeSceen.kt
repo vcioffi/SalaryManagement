@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -17,7 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,13 +33,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,19 +63,54 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
             .safeDrawingPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top){
-        EditNumberField(homeViewModel.salary, onSalaryChanged = {homeViewModel.updateSalary(it)})
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+        ){
+            EditNumberField(
+                modifier = Modifier
+                    .weight(1f),
+                salary = homeViewModel.salary,
+                onSalaryChanged = {homeViewModel.updateSalary(it)}
+            )
+            IconButton( modifier = Modifier
+                .align(Alignment.CenterVertically),
+                onClick = { homeViewModel.onLockClick() }) {
+                if (homeUiState.isSlidersEnable){
+                    Icon(Icons.Outlined.Lock, contentDescription = "Lock")
+                } else {
+                    Icon(Icons.Filled.Lock, contentDescription = "Lock")
+                }
+            }
+        }
         AmountText(label = stringResource(R.string.fixed_needs),
             value =homeUiState.fixedNeeds,
             slider = homeUiState.fixedNeedsPercentage,
-            changePerc = homeViewModel::onNeedsPercChange )
+            changePerc = homeViewModel::onNeedsPercChange,
+            isSlidersLock = homeUiState.isSlidersEnable)
         AmountText(label = stringResource(R.string.wants),
             value =homeUiState.wants,
             slider = homeUiState.wantsPercentage,
-            changePerc = homeViewModel::onWantsPercChange )
+            changePerc = homeViewModel::onWantsPercChange,
+            isSlidersLock = homeUiState.isSlidersEnable)
         AmountText(label = stringResource(R.string.savings),
             value =homeUiState.savings,
             slider = homeUiState.savingsPercentage,
-            changePerc = homeViewModel::onSavingPercChange )
+            changePerc = homeViewModel::onSavingPercChange,
+            isSlidersLock = homeUiState.isSlidersEnable
+            )
+        if(homeUiState.isSlidersEnable){
+            val signColor = if (homeUiState.totalPercentage > 100) colorScheme.error else colorScheme.primary
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                textAlign = TextAlign.Center,
+                text = stringResource(R.string.total_percentage,homeUiState.totalPercentage),
+                color = signColor,
+                fontSize = 16.sp
+            )
+        }
         OutlinedButton(
             onClick = { homeViewModel.calcPercentage() },
             modifier = Modifier.fillMaxWidth()
@@ -87,7 +122,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
             )
         }
         IconButton(onClick = { homeViewModel.onClear() }) {
-            Icon(Icons.Filled.Clear, contentDescription = "Clear")
+            Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
         }
     }
 }
@@ -99,7 +134,7 @@ fun EditNumberField(salary : String, onSalaryChanged: (String) -> Unit,modifier:
         value = salary,
         singleLine = true,
         shape = shapes.large,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.wrapContentWidth(),
 
         colors = TextFieldDefaults.colors(
             focusedContainerColor = colorScheme.surface,
@@ -116,7 +151,7 @@ fun EditNumberField(salary : String, onSalaryChanged: (String) -> Unit,modifier:
 }
 
 @Composable
-fun AmountText(label:String,slider: Float,changePerc :(Float) -> Unit,value:Double,modifier: Modifier = Modifier){
+fun AmountText(label:String,slider: Float,changePerc :(Float) -> Unit,value:Double,isSlidersLock :Boolean,modifier: Modifier = Modifier){
     Card(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 60.dp
@@ -151,10 +186,14 @@ fun AmountText(label:String,slider: Float,changePerc :(Float) -> Unit,value:Doub
                     )
             }
 
-            SliderPercentage(slider,changePerc)
+            SliderPercentage(slider,changePerc,isSlidersLock)
             Text(
                 modifier = Modifier
-                    .wrapContentHeight(align = Alignment.CenterVertically),
+                    .wrapContentHeight(align = Alignment.CenterVertically)
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.primary,
                 text = NumberFormat.getCurrencyInstance().format(value)
             )
         }
@@ -164,13 +203,14 @@ fun AmountText(label:String,slider: Float,changePerc :(Float) -> Unit,value:Doub
 
 
 @Composable
-fun SliderPercentage(perc : Float, changePerc :(Float) -> Unit) {
+fun SliderPercentage(perc : Float, changePerc :(Float) -> Unit, isSlidersEnable :Boolean) {
     Column {
         Slider(
             value = perc,
             onValueChange = changePerc,
             steps = 7,
-            valueRange = 10f..90f
+            valueRange = 10f..90f,
+            enabled = isSlidersEnable
         )
     }
 }

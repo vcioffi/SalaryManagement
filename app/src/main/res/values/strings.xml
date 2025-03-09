@@ -5,4 +5,5 @@
     <string name="savings">Savings</string>
     <string name="wants">Wants</string>
     <string name="fixed_needs">Fixed Needs</string>
+    <string name="total_percentage">Total Percentage %1$d%%</string>
 </resources>

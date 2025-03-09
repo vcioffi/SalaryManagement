@@ -6,4 +6,5 @@
     <string name="savings">Risparmi</string>
     <string name="wants">Desideri</string>
     <string name="fixed_needs">Bisogni</string>
+    <string name="total_percentage">Percentuale Totale %1$d%%</string>
 </resources>
